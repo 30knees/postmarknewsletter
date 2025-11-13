@@ -1,0 +1,36 @@
+# PrestaShop module files
+*.zip
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Node modules (if you add build tools later)
+node_modules/
+
+# Composer
+vendor/
+composer.lock
+
+# Testing
+/tests/coverage/
+phpunit.xml
+.phpunit.result.cache

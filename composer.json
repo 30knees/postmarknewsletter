@@ -1,0 +1,21 @@
+{
+  "name": "postmark-newsletter",
+  "version": "1.0.0",
+  "description": "Professional newsletter module for PrestaShop 8 with Postmark integration",
+  "author": "Your Name",
+  "license": "MIT",
+  "homepage": "https://github.com/yourusername/prestashop-postmark-newsletter",
+  "compatibility": {
+    "prestashop": "~8.0.0"
+  },
+  "category": "emailing",
+  "tags": [
+    "newsletter",
+    "postmark",
+    "email",
+    "bounce",
+    "unsubscribe",
+    "mailing",
+    "campaigns"
+  ]
+}

@@ -1,0 +1,122 @@
+/**
+ * Postmark Newsletter - Admin CSS
+ */
+
+.postmark-newsletter-admin {
+    margin: 20px 0;
+}
+
+.postmark-stats-box {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.postmark-stats-box h3 {
+    font-size: 36px;
+    margin: 10px 0;
+    color: #25b9d7;
+}
+
+.postmark-stats-box p {
+    color: #999;
+    margin: 0;
+    font-size: 14px;
+}
+
+.postmark-webhook-info {
+    background: #d9edf7;
+    border: 1px solid #bce8f1;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+.postmark-webhook-info code {
+    background: #fff;
+    padding: 8px 12px;
+    border-radius: 3px;
+    display: inline-block;
+    margin: 10px 0;
+    font-size: 13px;
+    color: #333;
+    word-break: break-all;
+}
+
+.postmark-webhook-info small {
+    display: block;
+    margin-top: 10px;
+    color: #31708f;
+}
+
+.postmark-quick-actions {
+    margin-top: 20px;
+}
+
+.postmark-quick-actions .panel {
+    min-height: 200px;
+}
+
+.postmark-test-form {
+    margin-top: 20px;
+}
+
+.postmark-test-form .form-group {
+    margin-bottom: 15px;
+}
+
+.postmark-alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.postmark-alert-success {
+    background-color: #dff0d8;
+    border-color: #d6e9c6;
+    color: #3c763d;
+}
+
+.postmark-alert-error {
+    background-color: #f2dede;
+    border-color: #ebccd1;
+    color: #a94442;
+}
+
+.postmark-alert-info {
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+    color: #31708f;
+}
+
+/* Button styles */
+.btn-postmark {
+    background-color: #ffde00;
+    border-color: #ffde00;
+    color: #000;
+}
+
+.btn-postmark:hover {
+    background-color: #e6c800;
+    border-color: #e6c800;
+    color: #000;
+}
+
+/* Stats grid */
+.postmark-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .postmark-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}

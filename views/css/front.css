@@ -1,0 +1,83 @@
+/**
+ * Postmark Newsletter - Frontend CSS
+ */
+
+.postmark-unsubscribe-container {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+.unsubscribe-confirm-box {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-actions {
+    margin: 30px 0;
+    text-align: center;
+}
+
+.form-actions .btn {
+    margin: 10px;
+    min-width: 200px;
+}
+
+.unsubscribe-info {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+}
+
+.unsubscribe-info h4 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.unsubscribe-info ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.unsubscribe-info ul li {
+    padding: 8px 0;
+    padding-left: 25px;
+    position: relative;
+    color: #666;
+}
+
+.unsubscribe-info ul li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #28a745;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+/* Material icons fallback */
+.alert i.material-icons {
+    vertical-align: middle;
+    margin-right: 10px;
+    font-size: 24px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .postmark-unsubscribe-container {
+        padding: 10px;
+        margin: 20px auto;
+    }
+
+    .unsubscribe-confirm-box {
+        padding: 20px;
+    }
+
+    .form-actions .btn {
+        display: block;
+        width: 100%;
+        margin: 10px 0;
+    }
+}
