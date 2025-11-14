@@ -1,5 +1,7 @@
 # PrestaShop module files
 *.zip
+build/
+dist/
 
 # IDE files
 .idea/

@@ -1,10 +1,30 @@
 {
-  "name": "postmark-newsletter",
+  "name": "postmark-newsletter/postmarknewsletter",
+  "type": "prestashop-module",
   "version": "1.0.0",
   "description": "Professional newsletter module for PrestaShop 8 with Postmark integration",
   "author": "Your Name",
   "license": "MIT",
   "homepage": "https://github.com/yourusername/prestashop-postmark-newsletter",
+  "require": {
+    "php": ">=7.2.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "PostmarkNewsletter\\": "src/"
+    },
+    "classmap": [
+      "classes/"
+    ]
+  },
+  "config": {
+    "preferred-install": "dist",
+    "optimize-autoloader": true,
+    "prepend-autoloader": false,
+    "platform": {
+      "php": "7.2.5"
+    }
+  },
   "compatibility": {
     "prestashop": "~8.0.0"
   },
