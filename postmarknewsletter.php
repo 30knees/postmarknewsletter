@@ -741,9 +741,9 @@ class PostmarkNewsletter extends Module
     protected function sendTestNewsletterContent()
     {
         $testEmail = Tools::getValue('test_newsletter_email');
-        $subject = Tools::getValue('newsletter_subject');
-        $htmlContent = Tools::getValue('newsletter_html');
-        $textContent = Tools::getValue('newsletter_text');
+        $subject = Tools::getValue('newsletter_subject_test');
+        $htmlContent = Tools::getValue('newsletter_html_test');
+        $textContent = Tools::getValue('newsletter_text_test');
 
         if (empty($testEmail) || !Validate::isEmail($testEmail)) {
             return $this->displayError($this->l('Please provide a valid test email address.'));

@@ -108,21 +108,6 @@
                 <p class="help-block">{l s='For tracking purposes in your reports.' mod='postmarknewsletter'}</p>
             </div>
 
-            <div class="well">
-                <h4>{l s='Test Newsletter' mod='postmarknewsletter'}</h4>
-                <p>{l s='Send the newsletter content above to a test email address before sending to all subscribers.' mod='postmarknewsletter'}</p>
-                <div class="row">
-                    <div class="col-md-6">
-                        <input type="email" name="test_newsletter_email" id="test_newsletter_email" class="form-control" placeholder="test@example.com">
-                    </div>
-                    <div class="col-md-6">
-                        <button type="submit" name="sendTestNewsletterContent" class="btn btn-default">
-                            <i class="icon-flask"></i> {l s='Send Test Newsletter' mod='postmarknewsletter'}
-                        </button>
-                    </div>
-                </div>
-            </div>
-
             <div class="alert alert-warning">
                 <i class="icon-warning"></i> {l s='This will send the newsletter to all active subscribers immediately. This action cannot be undone.' mod='postmarknewsletter'}
             </div>
@@ -136,6 +121,58 @@
                 </button>
             </div>
         </form>
+
+        <div class="well" style="margin-top: 20px;">
+            <h4><i class="icon-flask"></i> {l s='Test Newsletter' mod='postmarknewsletter'}</h4>
+            <p>{l s='Send the newsletter content above to a test email address before sending to all subscribers.' mod='postmarknewsletter'}</p>
+            <form method="post" action="" id="test-newsletter-form">
+                {* Pass the newsletter content as hidden fields *}
+                <input type="hidden" name="newsletter_subject_test" id="newsletter_subject_test" value="">
+                <input type="hidden" name="newsletter_html_test" id="newsletter_html_test" value="">
+                <input type="hidden" name="newsletter_text_test" id="newsletter_text_test" value="">
+                <div class="row">
+                    <div class="col-md-6">
+                        <input type="email" name="test_newsletter_email" id="test_newsletter_email" class="form-control" placeholder="test@example.com" required>
+                    </div>
+                    <div class="col-md-6">
+                        <button type="button" class="btn btn-default" onclick="sendTestNewsletter()">
+                            <i class="icon-flask"></i> {l s='Send Test Newsletter' mod='postmarknewsletter'}
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <script>
+            function sendTestNewsletter() {
+                // Copy values from main form to test form
+                document.getElementById('newsletter_subject_test').value = document.getElementById('newsletter_subject').value;
+                document.getElementById('newsletter_html_test').value = document.getElementById('newsletter_html').value;
+                document.getElementById('newsletter_text_test').value = document.getElementById('newsletter_text').value;
+
+                // Validate
+                if (!document.getElementById('newsletter_subject').value) {
+                    alert('{l s='Please fill in the subject field first.' mod='postmarknewsletter' js=1}');
+                    return false;
+                }
+                if (!document.getElementById('newsletter_html').value) {
+                    alert('{l s='Please fill in the HTML content field first.' mod='postmarknewsletter' js=1}');
+                    return false;
+                }
+                if (!document.getElementById('test_newsletter_email').value) {
+                    alert('{l s='Please enter a test email address.' mod='postmarknewsletter' js=1}');
+                    return false;
+                }
+
+                // Submit the test form
+                var form = document.getElementById('test-newsletter-form');
+                var button = document.createElement('input');
+                button.type = 'hidden';
+                button.name = 'sendTestNewsletterContent';
+                button.value = '1';
+                form.appendChild(button);
+                form.submit();
+            }
+            </script>
+        </div>
     </div>
 </div>
 
