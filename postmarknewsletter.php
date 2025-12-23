@@ -23,7 +23,7 @@ class PostmarkNewsletter extends Module
     {
         $this->name = 'postmarknewsletter';
         $this->tab = 'emailing';
-        $this->version = '1.0.0';
+        $this->version = '1.1.0';
         $this->author = 'Your Name';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = [
@@ -147,9 +147,27 @@ class PostmarkNewsletter extends Module
             $output .= $this->processNewsletterSending();
         }
 
+        if (Tools::isSubmit('saveNewsletterDraft')) {
+            $output .= $this->saveNewsletterDraft();
+        }
+
+        if (Tools::isSubmit('sendTestNewsletterContent')) {
+            $output .= $this->sendTestNewsletterContent();
+        }
+
+        if (Tools::isSubmit('loadCampaign')) {
+            $campaignId = (int)Tools::getValue('campaign_id');
+            $this->loadCampaignData($campaignId);
+        }
+
+        if (Tools::isSubmit('deleteCampaign')) {
+            $output .= $this->deleteCampaign();
+        }
+
         $this->context->smarty->assign(array(
             'module_dir' => $this->_path,
             'stats' => $this->getDashboardStats(),
+            'campaigns' => $this->getRecentCampaigns(10),
         ));
         $this->context->controller->addCSS($this->_path . 'views/css/admin.css');
         $this->context->controller->addJS($this->_path . 'views/js/admin.js');
@@ -643,6 +661,237 @@ class PostmarkNewsletter extends Module
         } catch (Exception $e) {
             PrestaShopLogger::addLog('Newsletter sending failed: ' . $e->getMessage(), 3);
             return $this->displayError($this->l('Failed to send newsletter: ') . $e->getMessage());
+        }
+    }
+
+    /**
+     * Save newsletter as draft
+     */
+    protected function saveNewsletterDraft()
+    {
+        $subject = Tools::getValue('newsletter_subject');
+        $htmlContent = Tools::getValue('newsletter_html');
+        $textContent = Tools::getValue('newsletter_text');
+        $campaignName = Tools::getValue('campaign_name');
+        $campaignId = (int)Tools::getValue('campaign_id');
+
+        if (empty($subject)) {
+            return $this->displayError($this->l('Please provide a subject for the newsletter.'));
+        }
+
+        if (empty($htmlContent)) {
+            return $this->displayError($this->l('Please provide HTML content for the newsletter.'));
+        }
+
+        try {
+            $queue = new NewsletterQueue();
+
+            // Generate campaign name if not provided
+            if (empty($campaignName)) {
+                $campaignName = 'Draft - ' . $subject . ' - ' . date('Y-m-d H:i:s');
+            }
+
+            // Update existing draft or create new one
+            if ($campaignId > 0) {
+                $result = $this->updateCampaignDraft($campaignId, $campaignName, $subject, $htmlContent, $textContent);
+                if ($result) {
+                    return $this->displayConfirmation($this->l('Draft updated successfully!'));
+                } else {
+                    return $this->displayError($this->l('Failed to update draft.'));
+                }
+            } else {
+                $campaignId = $queue->createCampaign($campaignName, $subject, $htmlContent, $textContent);
+
+                if ($campaignId) {
+                    PrestaShopLogger::addLog('Newsletter draft saved: ' . $campaignName, 1);
+                    return $this->displayConfirmation(
+                        $this->l('Draft saved successfully!') . ' ' .
+                        sprintf($this->l('Campaign ID: %d'), $campaignId)
+                    );
+                } else {
+                    return $this->displayError($this->l('Failed to save draft.'));
+                }
+            }
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog('Failed to save newsletter draft: ' . $e->getMessage(), 3);
+            return $this->displayError($this->l('Failed to save draft: ') . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update existing campaign draft
+     */
+    protected function updateCampaignDraft($campaignId, $name, $subject, $htmlContent, $textContent)
+    {
+        return Db::getInstance()->update(
+            'postmark_campaigns',
+            array(
+                'name' => pSQL($name),
+                'subject' => pSQL($subject),
+                'html_content' => pSQL($htmlContent, true),
+                'text_content' => pSQL($textContent, true),
+            ),
+            'id_campaign = ' . (int)$campaignId
+        );
+    }
+
+    /**
+     * Send test newsletter with actual content
+     */
+    protected function sendTestNewsletterContent()
+    {
+        $testEmail = Tools::getValue('test_newsletter_email');
+        $subject = Tools::getValue('newsletter_subject');
+        $htmlContent = Tools::getValue('newsletter_html');
+        $textContent = Tools::getValue('newsletter_text');
+
+        if (empty($testEmail) || !Validate::isEmail($testEmail)) {
+            return $this->displayError($this->l('Please provide a valid test email address.'));
+        }
+
+        if (empty($subject)) {
+            return $this->displayError($this->l('Please provide a subject for the newsletter.'));
+        }
+
+        if (empty($htmlContent)) {
+            return $this->displayError($this->l('Please provide HTML content for the newsletter.'));
+        }
+
+        $apiToken = Configuration::get('POSTMARK_API_TOKEN');
+        $fromEmail = Configuration::get('POSTMARK_FROM_EMAIL');
+        $fromName = Configuration::get('POSTMARK_FROM_NAME');
+        $messageStream = Configuration::get('POSTMARK_MESSAGE_STREAM', 'broadcast');
+
+        if (empty($apiToken) || empty($fromEmail) || empty($fromName)) {
+            return $this->displayError($this->l('Please configure Postmark API settings before sending test newsletters.'));
+        }
+
+        try {
+            $client = new PostmarkClient($apiToken);
+
+            // Add test watermark to subject
+            $testSubject = '[TEST] ' . $subject;
+
+            // Personalize with test data
+            $personalizedHtml = str_replace(
+                array('{firstname}', '{lastname}', '{email}'),
+                array('Test', 'User', $testEmail),
+                $htmlContent
+            );
+
+            $personalizedText = '';
+            if (!empty($textContent)) {
+                $personalizedText = str_replace(
+                    array('{firstname}', '{lastname}', '{email}'),
+                    array('Test', 'User', $testEmail),
+                    $textContent
+                );
+            }
+
+            // Add test notice at the top
+            $testNotice = '<div style="background: #fff3cd; border: 2px solid #ffc107; padding: 15px; margin-bottom: 20px; text-align: center; font-family: Arial, sans-serif;">' .
+                '<strong>⚠️ TEST NEWSLETTER</strong><br>' .
+                '<small>This is a test version of your newsletter. The actual newsletter will be sent without this notice.</small>' .
+                '</div>';
+            $personalizedHtml = $testNotice . $personalizedHtml;
+
+            $payload = array(
+                'From' => sprintf('%s <%s>', $fromName, $fromEmail),
+                'To' => $testEmail,
+                'Subject' => $testSubject,
+                'HtmlBody' => $personalizedHtml,
+                'MessageStream' => $messageStream,
+                'TrackOpens' => (bool)Configuration::get('POSTMARK_TRACK_OPENS', 1),
+            );
+
+            if (!empty($personalizedText)) {
+                $payload['TextBody'] = "=== TEST NEWSLETTER ===\n\n" . $personalizedText;
+            }
+
+            if ((bool)Configuration::get('POSTMARK_TRACK_LINKS', 1)) {
+                $payload['TrackLinks'] = 'HtmlAndText';
+            }
+
+            $client->sendEmail($payload);
+
+            return $this->displayConfirmation(
+                $this->l('Test newsletter sent successfully to ') . $testEmail . '. ' .
+                $this->l('Please check the inbox.')
+            );
+        } catch (Exception $e) {
+            return $this->displayError($this->l('Failed to send test newsletter: ') . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get recent campaigns
+     */
+    protected function getRecentCampaigns($limit = 10)
+    {
+        $campaigns = Db::getInstance()->executeS('
+            SELECT
+                c.*,
+                (SELECT COUNT(*) FROM ' . _DB_PREFIX_ . 'postmark_newsletter_log WHERE id_campaign = c.id_campaign) as email_count
+            FROM ' . _DB_PREFIX_ . 'postmark_campaigns c
+            ORDER BY c.created_at DESC
+            LIMIT ' . (int)$limit
+        );
+
+        if (!$campaigns) {
+            return array();
+        }
+
+        return $campaigns;
+    }
+
+    /**
+     * Load campaign data into form
+     */
+    protected function loadCampaignData($campaignId)
+    {
+        $campaign = Db::getInstance()->getRow('
+            SELECT *
+            FROM ' . _DB_PREFIX_ . 'postmark_campaigns
+            WHERE id_campaign = ' . (int)$campaignId
+        );
+
+        if ($campaign) {
+            $this->context->smarty->assign(array(
+                'loaded_campaign' => $campaign,
+            ));
+        }
+    }
+
+    /**
+     * Delete campaign
+     */
+    protected function deleteCampaign()
+    {
+        $campaignId = (int)Tools::getValue('campaign_id');
+
+        if ($campaignId <= 0) {
+            return $this->displayError($this->l('Invalid campaign ID.'));
+        }
+
+        // Check if campaign has been sent
+        $campaign = Db::getInstance()->getRow('
+            SELECT status, name
+            FROM ' . _DB_PREFIX_ . 'postmark_campaigns
+            WHERE id_campaign = ' . (int)$campaignId
+        );
+
+        if (!$campaign) {
+            return $this->displayError($this->l('Campaign not found.'));
+        }
+
+        // Delete campaign
+        $result = Db::getInstance()->delete('postmark_campaigns', 'id_campaign = ' . (int)$campaignId);
+
+        if ($result) {
+            PrestaShopLogger::addLog('Deleted campaign: ' . $campaign['name'], 1);
+            return $this->displayConfirmation($this->l('Campaign deleted successfully.'));
+        } else {
+            return $this->displayError($this->l('Failed to delete campaign.'));
         }
     }
 }

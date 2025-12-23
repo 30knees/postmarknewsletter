@@ -73,14 +73,23 @@
         </div>
 
         <form method="post" action="" id="newsletter-form">
+            <input type="hidden" name="campaign_id" id="campaign_id" value="{if isset($loaded_campaign)}{$loaded_campaign.id_campaign|intval}{else}0{/if}">
+
+            {if isset($loaded_campaign)}
+            <div class="alert alert-success">
+                <i class="icon-info-circle"></i> {l s='Editing campaign:' mod='postmarknewsletter'} <strong>{$loaded_campaign.name|escape:'htmlall':'UTF-8'}</strong>
+                <a href="?" class="btn btn-sm btn-default pull-right">{l s='Clear / New Newsletter' mod='postmarknewsletter'}</a>
+            </div>
+            {/if}
+
             <div class="form-group">
                 <label for="newsletter_subject">{l s='Subject *' mod='postmarknewsletter'}</label>
-                <input type="text" name="newsletter_subject" id="newsletter_subject" class="form-control" placeholder="{l s='Your newsletter subject' mod='postmarknewsletter'}" required>
+                <input type="text" name="newsletter_subject" id="newsletter_subject" class="form-control" placeholder="{l s='Your newsletter subject' mod='postmarknewsletter'}" value="{if isset($loaded_campaign)}{$loaded_campaign.subject|escape:'htmlall':'UTF-8'}{/if}" required>
             </div>
 
             <div class="form-group">
                 <label for="newsletter_html">{l s='HTML Content *' mod='postmarknewsletter'}</label>
-                <textarea name="newsletter_html" id="newsletter_html" class="form-control" rows="15" placeholder="{l s='Paste your HTML newsletter content here...' mod='postmarknewsletter'}" required></textarea>
+                <textarea name="newsletter_html" id="newsletter_html" class="form-control" rows="15" placeholder="{l s='Paste your HTML newsletter content here...' mod='postmarknewsletter'}" required>{if isset($loaded_campaign)}{$loaded_campaign.html_content|escape:'htmlall':'UTF-8'}{/if}</textarea>
                 <p class="help-block">
                     {l s='Paste your complete HTML newsletter here. Use {firstname}, {lastname}, and {email} for personalization.' mod='postmarknewsletter'}<br>
                     {l s='An unsubscribe link will be automatically added if not present.' mod='postmarknewsletter'}
@@ -89,23 +98,43 @@
 
             <div class="form-group">
                 <label for="newsletter_text">{l s='Plain Text Content (Optional)' mod='postmarknewsletter'}</label>
-                <textarea name="newsletter_text" id="newsletter_text" class="form-control" rows="8" placeholder="{l s='Plain text version for email clients that do not support HTML...' mod='postmarknewsletter'}"></textarea>
+                <textarea name="newsletter_text" id="newsletter_text" class="form-control" rows="8" placeholder="{l s='Plain text version for email clients that do not support HTML...' mod='postmarknewsletter'}">{if isset($loaded_campaign)}{$loaded_campaign.text_content|escape:'htmlall':'UTF-8'}{/if}</textarea>
                 <p class="help-block">{l s='If left empty, a plain text version will be auto-generated from the HTML.' mod='postmarknewsletter'}</p>
             </div>
 
             <div class="form-group">
                 <label for="campaign_name">{l s='Campaign Name (Optional)' mod='postmarknewsletter'}</label>
-                <input type="text" name="campaign_name" id="campaign_name" class="form-control" placeholder="{l s='e.g., Monthly Newsletter - December 2025' mod='postmarknewsletter'}">
+                <input type="text" name="campaign_name" id="campaign_name" class="form-control" placeholder="{l s='e.g., Monthly Newsletter - December 2025' mod='postmarknewsletter'}" value="{if isset($loaded_campaign)}{$loaded_campaign.name|escape:'htmlall':'UTF-8'}{/if}">
                 <p class="help-block">{l s='For tracking purposes in your reports.' mod='postmarknewsletter'}</p>
+            </div>
+
+            <div class="well">
+                <h4>{l s='Test Newsletter' mod='postmarknewsletter'}</h4>
+                <p>{l s='Send the newsletter content above to a test email address before sending to all subscribers.' mod='postmarknewsletter'}</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <input type="email" name="test_newsletter_email" id="test_newsletter_email" class="form-control" placeholder="test@example.com">
+                    </div>
+                    <div class="col-md-6">
+                        <button type="submit" name="sendTestNewsletterContent" class="btn btn-default">
+                            <i class="icon-flask"></i> {l s='Send Test Newsletter' mod='postmarknewsletter'}
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div class="alert alert-warning">
                 <i class="icon-warning"></i> {l s='This will send the newsletter to all active subscribers immediately. This action cannot be undone.' mod='postmarknewsletter'}
             </div>
 
-            <button type="submit" name="sendNewsletter" class="btn btn-primary btn-lg" onclick="return confirm('{l s='Are you sure you want to send this newsletter to all subscribers?' mod='postmarknewsletter' js=1}');">
-                <i class="icon-paper-plane"></i> {l s='Send Newsletter Now' mod='postmarknewsletter'}
-            </button>
+            <div class="btn-group btn-group-lg" role="group">
+                <button type="submit" name="saveNewsletterDraft" class="btn btn-default">
+                    <i class="icon-save"></i> {l s='Save as Draft' mod='postmarknewsletter'}
+                </button>
+                <button type="submit" name="sendNewsletter" class="btn btn-primary" onclick="return confirm('{l s='Are you sure you want to send this newsletter to all subscribers?' mod='postmarknewsletter' js=1}');">
+                    <i class="icon-paper-plane"></i> {l s='Send Newsletter Now' mod='postmarknewsletter'}
+                </button>
+            </div>
         </form>
     </div>
 </div>
@@ -137,5 +166,74 @@
                 </a>
             </div>
         </div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-heading">
+        <i class="icon-list"></i> {l s='Campaign History' mod='postmarknewsletter'}
+    </div>
+    <div class="panel-body">
+        {if isset($campaigns) && count($campaigns) > 0}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>{l s='ID' mod='postmarknewsletter'}</th>
+                        <th>{l s='Campaign Name' mod='postmarknewsletter'}</th>
+                        <th>{l s='Subject' mod='postmarknewsletter'}</th>
+                        <th>{l s='Status' mod='postmarknewsletter'}</th>
+                        <th>{l s='Recipients' mod='postmarknewsletter'}</th>
+                        <th>{l s='Sent' mod='postmarknewsletter'}</th>
+                        <th>{l s='Created' mod='postmarknewsletter'}</th>
+                        <th>{l s='Actions' mod='postmarknewsletter'}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {foreach from=$campaigns item=campaign}
+                    <tr>
+                        <td>{$campaign.id_campaign|intval}</td>
+                        <td><strong>{$campaign.name|escape:'htmlall':'UTF-8'}</strong></td>
+                        <td>{$campaign.subject|escape:'htmlall':'UTF-8'|truncate:50}</td>
+                        <td>
+                            {if $campaign.status == 'draft'}
+                                <span class="badge badge-info">{l s='Draft' mod='postmarknewsletter'}</span>
+                            {elseif $campaign.status == 'sending'}
+                                <span class="badge badge-warning">{l s='Sending' mod='postmarknewsletter'}</span>
+                            {elseif $campaign.status == 'sent'}
+                                <span class="badge badge-success">{l s='Sent' mod='postmarknewsletter'}</span>
+                            {elseif $campaign.status == 'failed'}
+                                <span class="badge badge-danger">{l s='Failed' mod='postmarknewsletter'}</span>
+                            {/if}
+                        </td>
+                        <td>{$campaign.total_recipients|intval}</td>
+                        <td>{$campaign.total_sent|intval}</td>
+                        <td>{$campaign.created_at|escape:'htmlall':'UTF-8'|date_format:"%Y-%m-%d %H:%M"}</td>
+                        <td>
+                            <div class="btn-group-action">
+                                <form method="post" action="" style="display: inline;">
+                                    <input type="hidden" name="campaign_id" value="{$campaign.id_campaign|intval}">
+                                    <button type="submit" name="loadCampaign" class="btn btn-default btn-sm" title="{l s='Load & Edit' mod='postmarknewsletter'}">
+                                        <i class="icon-edit"></i>
+                                    </button>
+                                </form>
+                                <form method="post" action="" style="display: inline;" onsubmit="return confirm('{l s='Are you sure you want to delete this campaign?' mod='postmarknewsletter' js=1}');">
+                                    <input type="hidden" name="campaign_id" value="{$campaign.id_campaign|intval}">
+                                    <button type="submit" name="deleteCampaign" class="btn btn-danger btn-sm" title="{l s='Delete' mod='postmarknewsletter'}">
+                                        <i class="icon-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {/foreach}
+                </tbody>
+            </table>
+        </div>
+        {else}
+        <div class="alert alert-info">
+            <i class="icon-info-circle"></i> {l s='No campaigns found. Create your first newsletter above!' mod='postmarknewsletter'}
+        </div>
+        {/if}
     </div>
 </div>
