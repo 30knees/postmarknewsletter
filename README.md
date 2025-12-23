@@ -17,19 +17,37 @@ A professional, production-ready newsletter module for PrestaShop 8 that integra
 
 ## ✨ Features
 
+### 📧 Newsletter Sending
+- ✅ **Admin UI Interface** - Complete admin panel for creating and sending newsletters
 - ✅ **Batch Sending** - Send up to 500 emails per API call for fast delivery
+- ✅ **Test Newsletter** - Send test emails with your actual content before going live
+- ✅ **Draft System** - Save newsletters as drafts and edit them later
+- ✅ **HTML & Plain Text** - Support for both HTML and plain text versions
+- ✅ **Personalization** - Use {firstname}, {lastname}, {email} variables
+
+### 📊 Campaign Management
+- ✅ **Campaign History** - View all sent newsletters and drafts in one place
+- ✅ **Load & Edit** - Load any campaign to edit and resend
+- ✅ **Campaign Statistics** - Track recipients, sent count, and status
+- ✅ **Delete Campaigns** - Remove old campaigns when no longer needed
+
+### 🛡️ Bounce & Unsubscribe Handling
 - ✅ **Automatic Bounce Handling** - Hard and soft bounce detection via webhooks
 - ✅ **Smart Auto-Unsubscribe** - Configurable rules for automatic list cleaning
 - ✅ **One-Click Unsubscribe** - RFC 8058 compliant List-Unsubscribe header
 - ✅ **Beautiful Unsubscribe Page** - User-friendly confirmation page
-- ✅ **Email Tracking** - Track opens and clicks via Postmark dashboard
-- ✅ **Personalization** - Use {firstname}, {lastname}, {email} variables
 - ✅ **Suppression List** - Prevent sending to previously bounced emails
-- ✅ **Webhook Support** - Automatic processing of Bounce, Delivery, Spam events
-- ✅ **Campaign Management** - Create, track, and manage newsletter campaigns
+
+### 📈 Tracking & Analytics
+- ✅ **Email Tracking** - Track opens and clicks via Postmark dashboard
 - ✅ **Statistics Dashboard** - Real-time metrics in PrestaShop admin
+- ✅ **Webhook Support** - Automatic processing of Bounce, Delivery, Spam events
+- ✅ **Delivery Status** - Track every email's delivery status
+
+### 🔧 Developer Features
 - ✅ **Full API Coverage** - Complete Postmark API wrapper included
-- ✅ **Multi-Language Support** - Fully translatable with German (de) and English (en) included
+- ✅ **Programmatic Access** - Send newsletters via PHP code
+- ✅ **Multi-Language Support** - 11 languages included out of the box
 
 ## 📋 Requirements
 
@@ -92,7 +110,73 @@ A professional, production-ready newsletter module for PrestaShop 8 that integra
    - **Spam Complaint**
 7. Save the webhook
 
-## Usage
+## 🚀 Usage
+
+### Sending Newsletters via Admin UI (Recommended)
+
+The easiest way to send newsletters is through the PrestaShop admin interface:
+
+1. **Navigate to Module Configuration**
+   - Go to **Modules > Module Manager**
+   - Search for "Postmark Newsletter"
+   - Click **Configure**
+
+2. **Create Your Newsletter**
+   - Scroll to the **"Send Newsletter"** section
+   - Fill in the form:
+     - **Subject** (required): Your email subject line
+     - **HTML Content** (required): Paste your complete HTML newsletter
+     - **Plain Text Content** (optional): Plain text version (auto-generated if empty)
+     - **Campaign Name** (optional): Name for tracking (e.g., "December 2025 Newsletter")
+
+3. **Test Before Sending**
+   - In the **"Test Newsletter"** section, enter your email address
+   - Click **"Send Test Newsletter"**
+   - Check your inbox for the test email with `[TEST]` prefix
+   - The test includes a yellow warning banner to distinguish it from real sends
+
+4. **Save as Draft** (Optional)
+   - Click **"Save as Draft"** to save without sending
+   - Your campaign will appear in the "Campaign History" below
+   - You can load and edit it later
+
+5. **Send to All Subscribers**
+   - When ready, click **"Send Newsletter Now"**
+   - Confirm the dialog (this action cannot be undone)
+   - View real-time statistics after sending
+
+6. **View Campaign History**
+   - Scroll to **"Campaign History"** panel at the bottom
+   - See all your drafts and sent campaigns
+   - **Load & Edit** - Click to load campaign into the form
+   - **Delete** - Remove campaigns you no longer need
+
+**Personalization Variables:**
+Use these in your HTML content:
+- `{firstname}` - Replaced with customer's first name
+- `{lastname}` - Replaced with customer's last name
+- `{email}` - Replaced with customer's email
+
+**Example HTML:**
+```html
+<!DOCTYPE html>
+<html>
+<body>
+  <h1>Hello {firstname}!</h1>
+  <p>Thank you for being a valued customer, {firstname} {lastname}.</p>
+  <p>This newsletter was sent to {email}.</p>
+  <p><a href="#">View our latest offers</a></p>
+</body>
+</html>
+```
+
+**After Sending:**
+- View detailed statistics (sent, failed, execution time)
+- Check errors if any sends failed
+- Monitor delivery in Postmark dashboard
+- Track opens and clicks in Postmark activity
+
+---
 
 ### Sending a Newsletter Programmatically
 
@@ -321,14 +405,17 @@ All user-facing text uses PrestaShop's `$this->l()` function, making it fully co
 
 ## Best Practices
 
-1. **Test first**: Always send test newsletters before sending to all subscribers
-2. **Use plain text**: Include both HTML and plain text versions
-3. **Personalize**: Use {firstname} and other variables to personalize emails
-4. **Monitor bounces**: Regularly check bounce statistics
-5. **Clean list**: Remove bounced emails to maintain good sender reputation
-6. **GDPR compliance**: Ensure you have consent before sending newsletters
-7. **Unsubscribe link**: Always include unsubscribe link (automatically added by module)
-8. **Message stream**: Use "broadcast" stream for newsletters (transactional for order emails)
+1. **Test first**: Always use the "Send Test Newsletter" feature before sending to all subscribers
+2. **Save drafts**: Use "Save as Draft" to work on newsletters over time before sending
+3. **Use plain text**: Include both HTML and plain text versions for better deliverability
+4. **Personalize**: Use {firstname}, {lastname}, and {email} variables to personalize emails
+5. **Review campaigns**: Check Campaign History to avoid sending duplicate content
+6. **Monitor bounces**: Regularly check bounce statistics in the dashboard
+7. **Clean list**: Remove bounced emails to maintain good sender reputation (automatic with webhooks)
+8. **GDPR compliance**: Ensure you have consent before sending newsletters
+9. **Unsubscribe link**: Always include unsubscribe link (automatically added by module)
+10. **Message stream**: Use "broadcast" stream for newsletters (transactional for order emails)
+11. **Name campaigns**: Use descriptive campaign names for better tracking and organization
 
 ## API Reference
 
@@ -410,11 +497,24 @@ Postmark API integration
 
 ## Changelog
 
+### Version 1.1.0 (Latest)
+- ✨ **NEW**: Complete admin UI for sending newsletters
+- ✨ **NEW**: Test newsletter feature - send your actual content to a test email
+- ✨ **NEW**: Save newsletters as drafts
+- ✨ **NEW**: Campaign history viewer with load/edit/delete actions
+- ✨ **NEW**: Load and edit existing campaigns
+- ✨ **NEW**: Campaign statistics (recipients, sent count, status)
+- 🎨 Improved admin interface with better organization
+- 📝 Updated documentation with admin UI usage guide
+
 ### Version 1.0.0
 - Initial release
-- Batch newsletter sending via Postmark
-- Automatic bounce handling
-- One-click unsubscribe
-- Webhook support
-- Campaign management
-- Email tracking
+- Batch newsletter sending via Postmark (programmatic API)
+- Automatic bounce handling with webhooks
+- One-click unsubscribe (RFC 8058 compliant)
+- Webhook support for Bounce, Delivery, Spam events
+- Campaign management (programmatic)
+- Email tracking (opens and clicks)
+- Multi-language support (11 languages)
+- Personalization variables
+- Statistics dashboard

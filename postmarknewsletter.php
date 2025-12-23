@@ -23,7 +23,7 @@ class PostmarkNewsletter extends Module
     {
         $this->name = 'postmarknewsletter';
         $this->tab = 'emailing';
-        $this->version = '1.0.0';
+        $this->version = '1.1.0';
         $this->author = 'Your Name';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = [
