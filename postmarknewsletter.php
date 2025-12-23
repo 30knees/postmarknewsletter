@@ -143,6 +143,10 @@ class PostmarkNewsletter extends Module
             $output .= $this->sendTestNewsletter();
         }
 
+        if (Tools::isSubmit('sendNewsletter')) {
+            $output .= $this->processNewsletterSending();
+        }
+
         $this->context->smarty->assign(array(
             'module_dir' => $this->_path,
             'stats' => $this->getDashboardStats(),
@@ -546,5 +550,99 @@ class PostmarkNewsletter extends Module
                 WHERE unsubscribed = 1
             )
         ');
+    }
+
+    /**
+     * Process newsletter sending from admin form
+     */
+    protected function processNewsletterSending()
+    {
+        // Validate inputs
+        $subject = Tools::getValue('newsletter_subject');
+        $htmlContent = Tools::getValue('newsletter_html');
+        $textContent = Tools::getValue('newsletter_text');
+        $campaignName = Tools::getValue('campaign_name');
+
+        if (empty($subject)) {
+            return $this->displayError($this->l('Please provide a subject for the newsletter.'));
+        }
+
+        if (empty($htmlContent)) {
+            return $this->displayError($this->l('Please provide HTML content for the newsletter.'));
+        }
+
+        // Check if Postmark is configured
+        $apiToken = Configuration::get('POSTMARK_API_TOKEN');
+        $fromEmail = Configuration::get('POSTMARK_FROM_EMAIL');
+        $fromName = Configuration::get('POSTMARK_FROM_NAME');
+
+        if (empty($apiToken) || empty($fromEmail) || empty($fromName)) {
+            return $this->displayError($this->l('Please configure Postmark API settings before sending newsletters.'));
+        }
+
+        // Check if there are subscribers
+        $totalSubscribers = $this->getTotalSubscribers();
+        if ($totalSubscribers == 0) {
+            return $this->displayError($this->l('No active subscribers found. Cannot send newsletter.'));
+        }
+
+        try {
+            // Create campaign if name provided
+            $campaignId = null;
+            if (!empty($campaignName)) {
+                $queue = new NewsletterQueue();
+                $campaignId = $queue->createCampaign($campaignName, $subject, $htmlContent, $textContent);
+            }
+
+            // Send the newsletter
+            $queue = new NewsletterQueue();
+            $result = $queue->sendNewsletter($subject, $htmlContent, $textContent, $campaignId);
+
+            // Generate success message with statistics
+            $successMessage = sprintf(
+                $this->l('Newsletter sent successfully!') . '<br>' .
+                $this->l('Total subscribers: %d') . '<br>' .
+                $this->l('Successfully sent: %d') . '<br>' .
+                $this->l('Failed: %d') . '<br>' .
+                $this->l('Batches sent: %d') . '<br>' .
+                $this->l('Execution time: %s seconds'),
+                $result['total_subscribers'],
+                $result['total_sent'],
+                $result['total_failed'],
+                $result['batches_sent'],
+                $result['execution_time']
+            );
+
+            // Log errors if any
+            if (!empty($result['errors'])) {
+                $errorList = '<br><strong>' . $this->l('Errors:') . '</strong><ul>';
+                foreach ($result['errors'] as $error) {
+                    $errorList .= '<li>' . htmlspecialchars($error) . '</li>';
+                }
+                $errorList .= '</ul>';
+                $successMessage .= $errorList;
+            }
+
+            // Log the action
+            PrestaShopLogger::addLog(
+                sprintf(
+                    'Newsletter sent: "%s" to %d subscribers (%d sent, %d failed)',
+                    $subject,
+                    $result['total_subscribers'],
+                    $result['total_sent'],
+                    $result['total_failed']
+                ),
+                1,
+                null,
+                'PostmarkNewsletter',
+                $campaignId
+            );
+
+            return $this->displayConfirmation($successMessage);
+
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog('Newsletter sending failed: ' . $e->getMessage(), 3);
+            return $this->displayError($this->l('Failed to send newsletter: ') . $e->getMessage());
+        }
     }
 }
